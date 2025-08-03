@@ -27,6 +27,7 @@ builder.Services.AddDbContext<DbContextApp>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString")));
 //to inject service inside our controller
 builder.Services.AddScoped<JWTService>();
+//first step
 // define our identity service
 builder.Services.AddIdentityCore<User>(options =>
 {
@@ -45,7 +46,7 @@ builder.Services.AddIdentityCore<User>(options =>
 .AddSignInManager<SignInManager<User>>()  //make use of sign in manager
 .AddUserManager<UserManager<User>>() //to make use of UserManager to create users
 .AddDefaultTokenProviders(); //to be able to create tokens for email confirmation 
-
+//3rd step
 //to Authenticat this user by using jwt
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {

@@ -3,6 +3,7 @@ using System;
 
 namespace webApplication.Models
 {
+    //5th step
     public class User:IdentityUser
     {
         public string FirstName { get; set; }

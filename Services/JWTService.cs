@@ -9,9 +9,14 @@ using webApplication.Models;
 
 namespace webApplication.Services
 {
+
+    //2nd step
+    //Configure JWT Service
     public class JWTService
     {
+        //_config: Holds application configuration (from appsettings.json)
         private readonly IConfiguration _config;
+        //means the same key is used to sign and verify tokens
         public readonly SymmetricSecurityKey _jwtSecurityKey;
 
         public JWTService(IConfiguration configuration)
@@ -25,12 +30,14 @@ namespace webApplication.Services
 
         }
         // دالة لإنشاء توكن JWT للمستخدم
+        //This method generates a JWT for the authenticated user.
         public string CreateJWT(User user)
         {
             //: قائمة بالمطالبات (Claims) التي سيحتويها التوكن:
 
         //    معرف المستخدم(ID) والبريد الإلكتروني
-
+        //بنيجي هنا نعمل ال claim , بيبيقي شايل كل المعلومات 
+        //و بعدين بنخزينها في jwt 
 
             var userClaims = new List<Claim>
             {
@@ -43,20 +50,28 @@ namespace webApplication.Services
             };
             // System.IdentityModel.Tokens.Jwt;
             //SecurityAlgorithms.HmacSha256Signature ==> the most secure algorithm so far 
+            //Combines the security key with the signing algorithm
             var credentials = new SigningCredentials(_jwtSecurityKey, SecurityAlgorithms.HmacSha256Signature);
+            // is a crucial component in JWT generation that contains all the specifications needed to create a token.
             var tokenDescriptor = new SecurityTokenDescriptor
             {
+                
 
-                Subject = new ClaimsIdentity(userClaims),
-                Expires = DateTime.UtcNow.AddDays(int.Parse(_config["JWT:ExpiresInDays"])),
-                SigningCredentials = credentials,
-                Issuer = _config["JWT:Issuer"]
+                Subject = new ClaimsIdentity(userClaims), //The claims identity containing user information
+                Expires = DateTime.UtcNow.AddDays(int.Parse(_config["JWT:ExpiresInDays"])), //Token expiration (important for security)
+                SigningCredentials = credentials, //How the token will be signed
+                Issuer = _config["JWT:Issuer"] //Who created the token (your API)
             };
             //دا مسؤول عن انشاء التوكنات
+            //The class that actually creates JWTs
             var tokenHandler = new JwtSecurityTokenHandler();
             //ينشئ التوكن بناءً على المواصفات
+            // بعد ما عملنا التوكن ادنها للjwt
+            // Generates the token based on the descriptor
+
             var jwt = tokenHandler.CreateToken(tokenDescriptor);
             //WriteToken: يحول التوكن إلى سلسلة نصية (string) يمكن إرسالها للعميل
+            // Serializes the token to a compact string format
             return tokenHandler.WriteToken(jwt);
         }
 
