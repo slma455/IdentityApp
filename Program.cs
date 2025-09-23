@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Linq;
 using System.Text;
 using webApplication.Context;
 using webApplication.Models;
@@ -41,7 +43,6 @@ builder.Services.AddIdentityCore<User>(options =>
     options.SignIn.RequireConfirmedEmail = true;
 
 }).AddRoles<IdentityRole>() // to be able to add roles
-.AddRoleManager<IdentityRole>() //to be able to make use of role manager
 .AddEntityFrameworkStores<DbContextApp>() //providing context 
 .AddSignInManager<SignInManager<User>>()  //make use of sign in manager
 .AddUserManager<UserManager<User>>() //to make use of UserManager to create users
@@ -64,6 +65,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateAudience = false,
     };
 });
+// In Program.cs or Startup.cs
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularDevServer",
+        builder => builder
+            .WithOrigins("http://localhost:4200") // Your Angular URL
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
+});
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory =
+    actionContext =>
+    {
+        var errors = actionContext.ModelState.Where(x => x.Value.Errors.Count() > 0)
+        .SelectMany(x => x.Value.Errors).Select(x => x.ErrorMessage).ToArray();
+        var toReturn = new
+        {
+            Error = errors
+        };
+        return new BadRequestObjectResult(toReturn);
+    };
+  
+});
 
 var app = builder.Build();
 
@@ -73,6 +99,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors("AllowAngularDevServer"); // Before UseAuthorization
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
