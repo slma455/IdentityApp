@@ -1,0 +1,61 @@
+<div class="d-flex justify-content-center">
+  <div class="col-12 col-lg-5">
+    <main class="form-signin">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
+        <div class="text-center mb-4">
+          <h3 class="mb-3 font-weight-normal">Login</h3>
+        </div>
+
+        <!-- Username Field -->
+        <div class="form-floating mb-3">
+          <input formControlName="username" type="text" 
+                 placeholder="UserName (your email address)"
+                 class="form-control" 
+                 [class.is-invalid]="submitted && loginForm.get('userName')?.invalid">
+          <label for="userName">UserName (your email address)</label>
+          
+          <!-- Validation Messages for UserName -->
+          <div *ngIf="submitted && loginForm.get('userName')?.invalid" class="invalid-feedback">
+            <span *ngIf="loginForm.get('userName')?.hasError('required')">
+              Username is required
+            </span>
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-floating mb-3">
+          <input formControlName="password" type="password" 
+                 placeholder="Password" 
+                 class="form-control"
+                 [class.is-invalid]="submitted && loginForm.get('password')?.invalid">
+          <label for="password">Password</label>
+          
+          <!-- Validation Messages for Password -->
+          <div *ngIf="submitted && loginForm.get('password')?.invalid" class="invalid-feedback">
+            <span *ngIf="loginForm.get('password')?.hasError('required')">
+              Password is required
+            </span>
+          </div>
+        </div>
+
+        <!-- Error Messages Display -->
+        <div *ngIf="errorMessages.length > 0" class="alert alert-danger">
+          <div *ngFor="let error of errorMessages">{{ error }}</div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-grid mt-4 px-1">
+          <button class="btn btn-lg btn-info" type="submit" [disabled]="loginForm.invalid && submitted">
+            Log In
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-4 text-center">
+        <a class="btn btn-link" routerLink="/forgot-password">
+          <h6>Forgot Username or Password</h6>
+        </a>
+      </div>
+    </main>
+  </div>
+</div>
