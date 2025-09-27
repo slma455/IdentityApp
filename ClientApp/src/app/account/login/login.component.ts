@@ -39,8 +39,8 @@ export class LoginComponent implements OnInit {
 
     if (this.loginForm.valid) {
        console.log('Form valid:', this.loginForm.valid);
-  console.log('Form errors:', this.loginForm.errors);
-  console.log('Form values:', this.loginForm.value);
+       console.log('Form errors:', this.loginForm.errors);
+        console.log('Form values:', this.loginForm.value);
       this.accountService.login(this.loginForm.value)
         .pipe(first())
         .subscribe({
