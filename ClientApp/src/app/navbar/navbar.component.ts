@@ -14,6 +14,7 @@ constructor
 } 
 
 
-logout(){  localStorage.removeItem('user');
+logout(){  
+  this.accountService.logout();
  }
 }
