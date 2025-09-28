@@ -1,41 +1,35 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Register } from '../shared/models/register';
-import { environment } from 'src/environments/environment.development';
-import { Login } from '../shared/models/login';
-import { User } from '../shared/models/user';
-import { ReplaySubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Component, OnInit } from '@angular/core';
+import { AccountService } from './account/account.service';
 
-@Injectable({
-  providedIn: 'root'
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
 })
-export class AccountService {
+export class AppComponent implements OnInit {
+  title = 'ClientApp';
 
-  private userSource = new ReplaySubject<User | null>(1);
-  user$ = this.userSource.asObservable();
+  constructor(private accountService: AccountService) {}
 
-  constructor(private http: HttpClient) {}
-
-login(model: Login) {
-  return this.http.post<User>(`${environment.appUrl}/api/account/Login`, model).pipe(
-    map((user: User) => {
-      if (user) {
-        this.setUser(user);
-      }
-      return user; // <-- return user so subscriber gets it
-    })
-  );
-}
-
-
-  register(model: Register) {
-    return this.http.post(`${environment.appUrl}/api/account/Register`, model);
+  ngOnInit() {
+    this.refreshUser();
   }
 
-  private setUser(user: User) {
-    localStorage.setItem(environment.userKey, JSON.stringify(user));
-    this.userSource.next(user);
-    this.user$.subscribe({next:Response =>console.log(Response)})
+  private refreshUser(): void {
+    const jwt = this.accountService.getJWT();
+    
+    if (jwt) {
+      this.accountService.refreshUser(jwt).subscribe({
+        next: () => {
+          // User refreshed successfully
+        },
+        error: () => {
+          this.accountService.logout();
+        }
+      });
+    } else {
+      // Explicitly set user to null when no JWT exists
+      this.accountService.refreshUser(null).subscribe();
+    }
   }
 }

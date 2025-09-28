@@ -1,8 +1,9 @@
-﻿using Azure.Messaging;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using webApplication.DTO.Account;
 using webApplication.Models;
@@ -14,18 +15,28 @@ namespace webApplication.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly JWTService _JWTService;
+        private readonly JWTService _jwtService;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
-        public AccountController(JWTService jWTService , SignInManager<User> signInManager ,UserManager<User> userManager)
+
+        public AccountController(
+            JWTService jwtService,
+            SignInManager<User> signInManager,
+            UserManager<User> userManager)
         {
-            _JWTService = jWTService;
+            _jwtService = jwtService;
             _signInManager = signInManager;
             _userManager = userManager;
         }
 
-
+        /// <summary>
+        /// Authenticates a user and returns a JWT token
+        /// </summary>
+        /// <param name="model">Login credentials</param>
+        /// <returns>User information with JWT token</returns>
         [HttpPost("Login")]
+        [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<UserDTO>> Login(LoginDTO model)
         {
             var user = await _userManager.FindByNameAsync(model.UserName);
@@ -33,13 +44,29 @@ namespace webApplication.Controllers
             {
                 return Unauthorized("Invalid User");
             }
-            if (user.EmailConfirmed == false)
-                return Unauthorized("please confirm your email");
+
+            if (!user.EmailConfirmed)
+            {
+                return Unauthorized("Please confirm your email");
+            }
+
             var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
-            if (!result.Succeeded) return Unauthorized("Invalid username or password");
+            if (!result.Succeeded)
+            {
+                return Unauthorized("Invalid username or password");
+            }
+
             return CreateApplicationUserDTO(user);
         }
+
+        /// <summary>
+        /// Registers a new user
+        /// </summary>
+        /// <param name="registerDTO">User registration information</param>
+        /// <returns>Registration result</returns>
         [HttpPost("Register")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Register(RegisterDTO registerDTO)
         {
             if (await CheckEmailExistAsync(registerDTO.Email))
@@ -85,14 +112,30 @@ namespace webApplication.Controllers
             });
         }
 
-        #region private methods
+        /// <summary>
+        /// Refreshes the user token
+        /// </summary>
+        /// <returns>User information with new JWT token</returns>
+        [Authorize]
+        [HttpGet("RefreshUserToken")]
+        [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<UserDTO>> RefreshUserToken()
+        {
+            var user = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.Email)?.Value);
+            if (user == null) return Unauthorized("User not found");
+
+            return CreateApplicationUserDTO(user);
+        }
+
+        #region Private methods
         private UserDTO CreateApplicationUserDTO(User user)
         {
             return new UserDTO
             {
                 firstName = user.FirstName,
                 lasttName = user.LastName,
-                JWT = _JWTService.CreateJWT(user)
+                JWT = _jwtService.CreateJWT(user)
             };
         }
 
