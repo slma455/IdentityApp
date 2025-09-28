@@ -1,35 +1,70 @@
-import { Component, OnInit } from '@angular/core';
-import { AccountService } from './account/account.service';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Register } from '../shared/models/register';
+import { environment } from 'src/environments/environment.development';
+import { Login } from '../shared/models/login';
+import { User } from '../shared/models/user';
+import { of, ReplaySubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
-@Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+@Injectable({
+  providedIn: 'root'
 })
-export class AppComponent implements OnInit {
-  title = 'ClientApp';
+export class AccountService {
 
-  constructor(private accountService: AccountService) {}
+  private userSource = new ReplaySubject<User | null>(1);
+  user$ = this.userSource.asObservable();
 
-  ngOnInit() {
-    this.refreshUser();
+  constructor(private http: HttpClient, private router: Router) {}
+
+  refreshUser(jwt: string | null): Observable<User | undefined> {
+    if (jwt === null) {
+      this.userSource.next(null);
+      return of(undefined);
+    }
+    
+    let headers = new HttpHeaders().set('Authorization', `Bearer ${jwt}`);
+    return this.http.get<User>(`${environment.appUrl}/api/account/RefreshUserToken`, { headers }).pipe(
+      map((user: User) => {
+        this.setUser(user);
+        return user;
+      })
+    );
   }
 
-  private refreshUser(): void {
-    const jwt = this.accountService.getJWT();
-    
-    if (jwt) {
-      this.accountService.refreshUser(jwt).subscribe({
-        next: () => {
-          // User refreshed successfully
-        },
-        error: () => {
-          this.accountService.logout();
+  login(model: Login) {
+    return this.http.post<User>(`${environment.appUrl}/api/account/Login`, model).pipe(
+      map((user: User) => {
+        if (user) {
+          this.setUser(user);
         }
-      });
-    } else {
-      // Explicitly set user to null when no JWT exists
-      this.accountService.refreshUser(null).subscribe();
+        return user;
+      })
+    );
+  }
+
+  logout() {
+    localStorage.removeItem(environment.userKey);
+    this.userSource.next(null);
+    this.router.navigateByUrl('/');
+  }
+
+  register(model: Register) {
+    return this.http.post(`${environment.appUrl}/api/account/Register`, model);
+  }
+
+  getJWT(): string | null {
+    const key = localStorage.getItem(environment.userKey);
+    if (key) {
+      const user: User = JSON.parse(key);
+      return user.JWT;
     }
+    return null;
+  }
+
+  private setUser(user: User) {
+    localStorage.setItem(environment.userKey, JSON.stringify(user));
+    this.userSource.next(user);
   }
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AccountService } from './account/account.service';
+import { AccountService } from './account/account.service'; 
 
 @Component({
   selector: 'app-root',
@@ -21,14 +21,15 @@ export class AppComponent implements OnInit {
     if (jwt) {
       this.accountService.refreshUser(jwt).subscribe({
         next: () => {
-          // User refreshed successfully - optional callback
+          // User refreshed successfully
         },
-        error: (error: any) => {
-          console.error('Failed to refresh user:', error);
+        error: () => {
           this.accountService.logout();
         }
       });
+    } else {
+      // Explicitly set user to null when no JWT exists
+      this.accountService.refreshUser(null).subscribe();
     }
-    // If no JWT exists, do nothing - user is not logged in
   }
 }
