@@ -10,6 +10,8 @@ import { SharedModule } from './shared/shared.module';
 import { PlayComponent } from './play/play.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
+// Update the path below to the correct location of account.module.ts
+// For example, if the file is in 'src/app/account/account.module.ts', use:
 import { AccountModule } from './account/account.module';
 
 

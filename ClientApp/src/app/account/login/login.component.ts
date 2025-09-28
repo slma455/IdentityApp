@@ -52,7 +52,7 @@ export class LoginComponent implements OnInit {
               user.title || 'Login Success', 
               user.message || 'Login successful'
             );
-            this.router.navigate(['/home']);
+            this.router.navigate(['/']);
           },
           error: (error) => {
             // Handle login error - 3 parameters: isSuccess, title, message
