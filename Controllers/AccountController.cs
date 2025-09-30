@@ -116,7 +116,6 @@ namespace webApplication.Controllers
         /// Refreshes the user token
         /// </summary>
         /// <returns>User information with new JWT token</returns>
-        [Authorize]
         [HttpGet("RefreshUserToken")]
         [ProducesResponseType(typeof(UserDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -128,16 +127,20 @@ namespace webApplication.Controllers
             return CreateApplicationUserDTO(user);
         }
 
+   
+      
+
         #region Private methods
         private UserDTO CreateApplicationUserDTO(User user)
         {
             return new UserDTO
             {
-                firstName = user.FirstName,
-                lasttName = user.LastName,
+                FirstName = user.FirstName,
+                LasttName = user.LastName,
                 JWT = _jwtService.CreateJWT(user)
             };
         }
+
 
         private async Task<bool> CheckEmailExistAsync(string email)
         {

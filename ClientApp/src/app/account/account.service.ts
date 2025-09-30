@@ -38,6 +38,7 @@ export class AccountService {
     return this.http.post<User>(`${environment.appUrl}/api/account/Login`, model).pipe(
       map((user: User) => {
         if (user) {
+          debugger;
           this.setUser(user);
         }
         return user;
@@ -55,14 +56,16 @@ export class AccountService {
     return this.http.post(`${environment.appUrl}/api/account/Register`, model);
   }
 
-  getJWT(): string | null {
-    const key = localStorage.getItem(environment.userKey);
-    if (key) {
-      const user: User = JSON.parse(key);
-      return user.JWT;
-    }
-    return null;
+getJWT(): string | null {
+  debugger;
+  const key = localStorage.getItem(environment.userKey);
+  if (key) {
+    const user: User = JSON.parse(key);
+    return user.jwt;   // not user.JWT
   }
+  return null;
+}
+
 
   private setUser(user: User) {
     localStorage.setItem(environment.userKey, JSON.stringify(user));

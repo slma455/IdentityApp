@@ -12,10 +12,12 @@ export class AppComponent implements OnInit {
   constructor(private accountService: AccountService) {}
 
   ngOnInit() {
+    debugger;
     this.refreshUser();
   }
 
   private refreshUser(): void {
+    debugger;
     const jwt = this.accountService.getJWT();
     
     if (jwt) {

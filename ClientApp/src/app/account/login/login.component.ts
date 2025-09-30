@@ -38,9 +38,7 @@ export class LoginComponent implements OnInit {
     this.errorMessages = [];
 
     if (this.loginForm.valid) {
-       console.log('Form valid:', this.loginForm.valid);
-       console.log('Form errors:', this.loginForm.errors);
-        console.log('Form values:', this.loginForm.value);
+  
       this.accountService.login(this.loginForm.value)
         .pipe(first())
         .subscribe({

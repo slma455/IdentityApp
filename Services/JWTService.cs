@@ -52,13 +52,15 @@ namespace webApplication.Services
             //SecurityAlgorithms.HmacSha256Signature ==> the most secure algorithm so far 
             //Combines the security key with the signing algorithm
             var credentials = new SigningCredentials(_jwtSecurityKey, SecurityAlgorithms.HmacSha256Signature);
+            int expiresInDays = int.Parse(_config["JWT:ExpiresInDays"] ?? "1");
+
             // is a crucial component in JWT generation that contains all the specifications needed to create a token.
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                
 
-                Subject = new ClaimsIdentity(userClaims), //The claims identity containing user information
-                Expires = DateTime.UtcNow.AddDays(int.Parse(_config["JWT:ExpiresInDays"])), //Token expiration (important for security)
+
+            Subject = new ClaimsIdentity(userClaims), //The claims identity containing user information
+                Expires = DateTime.UtcNow.AddDays(expiresInDays), //Token expiration (important for security)
                 SigningCredentials = credentials, //How the token will be signed
                 Issuer = _config["JWT:Issuer"] //Who created the token (your API)
             };

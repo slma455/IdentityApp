@@ -88,6 +88,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     {
         //validate the token based on the key we have provided inside appsetting 
         ValidateIssuerSigningKey = true,
+
         // the issuer signing key based on jwt key
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"])),
         //the issuer which in here is the api project url you are using 
@@ -96,6 +97,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateIssuer = true,
         //dont validate audience(angular side)
         ValidateAudience = false,
+        ClockSkew = TimeSpan.Zero, // no extra buffer
+        ValidateLifetime = true
     };
 });
 
