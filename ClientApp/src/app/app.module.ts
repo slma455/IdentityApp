@@ -13,6 +13,8 @@ import { FormsModule } from '@angular/forms';
 // Update the path below to the correct location of account.module.ts
 // For example, if the file is in 'src/app/account/account.module.ts', use:
 import { AccountModule } from './account/account.module';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { JwtInterceptor } from './shared/interceptors/jwt.interceptor';
 
 
 @NgModule({
@@ -32,7 +34,7 @@ import { AccountModule } from './account/account.module';
     FormsModule,
     AccountModule
   ],
-  providers: [],
+  providers: [{provide:HTTP_INTERCEPTORS,useClass: JwtInterceptor,multi:true}],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

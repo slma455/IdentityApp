@@ -20,7 +20,21 @@ export class RegisterComponent implements OnInit {
       private SharedService: SharedService,
       private router:Router,
       private formBuilder: FormBuilder
-    ) {}
+    ) {
+
+      this.accountService.user$.pipe(first()).subscribe(
+        {
+       next:(user)=>{
+          if(user){
+            this.router.navigateByUrl('/');
+          }
+        }
+        }
+      
+      )
+
+  
+  }
 
     ngOnInit(): void {
       this.initializeForm();
