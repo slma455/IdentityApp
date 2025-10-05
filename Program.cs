@@ -82,23 +82,20 @@ builder.Services.AddIdentityCore<User>(options =>
 .AddDefaultTokenProviders(); //to be able to create tokens for email confirmation 
 
 //3rd step - to Authenticate this user by using jwt
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        //validate the token based on the key we have provided inside appsetting 
         ValidateIssuerSigningKey = true,
-
-        // the issuer signing key based on jwt key
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"])),
-        //the issuer which in here is the api project url you are using 
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        //validate the issuer 
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"])
+        ),
         ValidateIssuer = true,
-        //dont validate audience(angular side)
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
         ValidateAudience = false,
-        ClockSkew = TimeSpan.Zero, // no extra buffer
-        ValidateLifetime = true
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
     };
 });
 
@@ -149,6 +146,21 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAngularDevServer"); // Before UseAuthorization
+// Add a relaxed Content-Security-Policy for development
+if (app.Environment.IsDevelopment())
+{
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers["Content-Security-Policy"] =
+            "default-src 'self'; " +
+            "connect-src 'self' http://localhost:4200 ws://localhost:4200; " +
+            "script-src 'self' 'unsafe-inline'; " +
+            "style-src 'self' 'unsafe-inline'; " +
+            "img-src 'self' data: blob:; " +
+            "font-src 'self' data:;";
+        await next();
+    });
+}
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
