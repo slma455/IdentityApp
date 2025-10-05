@@ -10,7 +10,6 @@ export class PlayService {
   constructor(private http: HttpClient) { }
 
   getPlayers() {
-    debugger;
 
     // 🔍 Log the current environment configuration
     console.log('🌎 Environment configuration:', environment);
