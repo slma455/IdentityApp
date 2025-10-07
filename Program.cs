@@ -62,7 +62,7 @@ builder.Services.AddDbContext<DbContextApp>(options =>
 
 //to inject service inside our controller
 builder.Services.AddScoped<JWTService>();
-
+builder.Services.AddScoped<EmailService>();
 //first step - define our identity service
 builder.Services.AddIdentityCore<User>(options =>
 {
